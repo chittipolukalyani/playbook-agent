@@ -755,7 +755,7 @@
     }
 
     try {
-      const response = await fetch("http://localhost:8000/analyze", {
+      const response = await fetch("https://playbook-agent.onrender.com/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ problem })
@@ -818,7 +818,7 @@
   async function submitFeedback(rating) {
     if (!lastResult) return;
     try {
-      await fetch("http://localhost:8000/feedback", {
+      await fetch("https://playbook-agent.onrender.com/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ playbook: lastResult.playbook, rating, problem: lastResult.problem })
@@ -833,7 +833,7 @@
   async function loadEvals() {
     document.getElementById("evalContent").innerHTML = '<div class="empty-state">// Running 210 test cases...</div>';
     try {
-      const response = await fetch("http://localhost:8000/evals");
+      const response = await fetch("https://playbook-agent.onrender.com/evals");
       const data = await response.json();
 
       const barsHtml = Object.entries(data.playbook_stats).map(([name, stats]) => {
@@ -903,7 +903,7 @@
 
     for (const test of redTeamInputs) {
       try {
-        const response = await fetch("http://localhost:8000/analyze", {
+        const response = await fetch("https://playbook-agent.onrender.com/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ problem: test.input || "empty input" })
@@ -957,7 +957,7 @@
 
   async function loadInsights() {
     try {
-      const response = await fetch("http://localhost:8000/insights");
+      const response = await fetch("https://playbook-agent.onrender.com/insights");
       const data = await response.json();
 
       if (data.total === 0) {
