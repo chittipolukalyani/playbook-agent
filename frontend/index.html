@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Playbook Agent</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080810;
+      --surface: #0e0e1c;
+      --card: #13132a;
+      --border: #1e1e3a;
+      --accent: #6ee7f7;
+      --accent2: #f472b6;
+      --accent3: #a78bfa;
+      --text: #e2e8f0;
+      --muted: #4a5568;
+      --success: #34d399;
+      --danger: #f87171;
+      --warning: #fbbf24;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(110,231,247,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(110,231,247,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(110,231,247,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb2 {
+      position: fixed;
+      bottom: -200px;
+      left: -200px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(244,114,182,0.05) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 48px 24px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(110,231,247,0.08);
+      border: 1px solid rgba(110,231,247,0.2);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .header h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent3) 50%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 6px;
+      margin-bottom: 32px;
+      animation: fadeDown 0.6s ease 0.1s both;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px 8px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 600;
+      font-family: 'Syne', sans-serif;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .tab:hover { color: var(--text); }
+
+    .tab.active {
+      background: var(--card);
+      color: var(--accent);
+      border: 1px solid var(--border);
+      box-shadow: 0 0 20px rgba(110,231,247,0.1);
+    }
+
+    .page { display: none; animation: fadeUp 0.3s ease both; }
+    .page.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(110,231,247,0.3), transparent);
+    }
+
+    .section-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .input-wrapper { position: relative; }
+
+    textarea {
+      width: 100%;
+      height: 130px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: 'Syne', sans-serif;
+      padding: 16px;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      line-height: 1.6;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(110,231,247,0.08);
+    }
+
+    textarea::placeholder { color: var(--muted); }
+
+    .voice-btn {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: all 0.2s;
+      padding: 0;
+      margin-top: 0;
+    }
+
+    .voice-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .voice-btn.listening {
+      border-color: var(--danger);
+      color: var(--danger);
+      animation: pulse 1s infinite;
+      background: rgba(248,113,113,0.1);
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(248,113,113,0.3); }
+      50% { box-shadow: 0 0 0 8px rgba(248,113,113,0); }
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent3) 100%);
+      color: #080810;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+      box-shadow: 0 0 30px rgba(110,231,247,0.3);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      background: var(--border);
+      color: var(--muted);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-danger {
+      background: rgba(248,113,113,0.1);
+      color: var(--danger);
+      border: 1px solid rgba(248,113,113,0.3);
+    }
+
+    .btn-danger:hover {
+      background: rgba(248,113,113,0.2);
+      box-shadow: 0 0 20px rgba(248,113,113,0.2);
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--accent);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover { border-color: var(--accent); }
+
+    .thinking { display: flex; flex-direction: column; gap: 8px; }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border-radius: 10px;
+      border-left: 2px solid var(--accent);
+      animation: slideIn 0.4s ease both;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-16px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .step-icon { font-size: 1.1rem; }
+    .step-text { font-size: 0.88rem; color: #94a3b8; font-family: 'Space Mono', monospace; }
+
+    .playbook-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(167,139,250,0.1);
+      color: var(--accent3);
+      border: 1px solid rgba(167,139,250,0.3);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .confidence-wrapper {
+      margin-bottom: 20px;
+      padding: 16px;
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .confidence-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .confidence-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .confidence-value { font-size: 1.4rem; font-weight: 800; color: var(--success); }
+
+    .confidence-track {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent3), var(--success));
+      transition: width 1s ease;
+    }
+
+    .feedback-section {
+      margin-top: 20px;
+      padding: 16px;
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .feedback-buttons { display: flex; gap: 10px; margin-top: 10px; align-items: center; }
+
+    .feedback-btn {
+      padding: 10px 24px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0;
+      width: auto;
+    }
+
+    .feedback-btn:hover { transform: scale(1.1); }
+    .feedback-btn.up:hover { border-color: var(--success); background: rgba(52,211,153,0.1); }
+    .feedback-btn.down:hover { border-color: var(--danger); background: rgba(248,113,113,0.1); }
+    .feedback-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .solution-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+
+    .sol-tab {
+      padding: 6px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: 'Syne', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .sol-tab.active { background: var(--surface); color: var(--accent); border-color: var(--accent); }
+
+    .solution-box {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 20px;
+      font-size: 0.88rem;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      border: 1px solid var(--border);
+      font-family: 'Space Mono', monospace;
+      max-height: 400px;
+      overflow-y: auto;
+      color: #cbd5e1;
+    }
+
+    .diff-wrapper { display: none; gap: 12px; }
+    .diff-wrapper.active { display: grid; grid-template-columns: 1fr 1fr; }
+
+    .diff-panel { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+
+    .diff-header { padding: 10px 16px; font-size: 0.75rem; font-family: 'Space Mono', monospace; font-weight: 700; letter-spacing: 1px; }
+
+    .diff-before .diff-header { background: rgba(248,113,113,0.1); color: var(--danger); border-bottom: 1px solid rgba(248,113,113,0.2); }
+    .diff-after .diff-header { background: rgba(52,211,153,0.1); color: var(--success); border-bottom: 1px solid rgba(52,211,153,0.2); }
+
+    .diff-code { padding: 16px; font-size: 0.82rem; font-family: 'Space Mono', monospace; white-space: pre-wrap; color: #94a3b8; line-height: 1.7; min-height: 120px; }
+
+    .accuracy-hero { text-align: center; padding: 20px 0; }
+
+    .accuracy-number {
+      font-size: 5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--success));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .accuracy-sub { color: var(--muted); font-size: 0.85rem; margin-top: 8px; font-family: 'Space Mono', monospace; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 24px 0; }
+
+    .stat-box { background: var(--surface); border-radius: 14px; padding: 20px; text-align: center; border: 1px solid var(--border); }
+
+    .stat-number { font-size: 2rem; font-weight: 800; }
+    .stat-label { font-size: 0.7rem; color: var(--muted); margin-top: 4px; font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 1px; }
+
+    .playbook-bar { margin-bottom: 14px; }
+
+    .bar-meta { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 6px; font-family: 'Space Mono', monospace; }
+
+    .bar-name { color: var(--text); }
+    .bar-pct { color: var(--accent); }
+
+    .bar-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+
+    .bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent3), var(--accent)); transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
+
+    .failed-case { background: var(--surface); border-left: 2px solid var(--danger); border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; }
+    .failed-problem { color: var(--text); font-size: 0.85rem; margin-bottom: 4px; }
+    .failed-meta { color: var(--muted); font-size: 0.75rem; font-family: 'Space Mono', monospace; }
+
+    .redteam-card {
+      background: var(--surface);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 10px;
+      border-left: 3px solid var(--warning);
+      border-top: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .rt-input { color: var(--text); font-size: 0.85rem; margin-bottom: 6px; font-family: 'Space Mono', monospace; }
+    .rt-status { font-size: 0.78rem; margin-bottom: 4px; }
+    .rt-expected { color: var(--muted); font-size: 0.72rem; }
+    .pass { color: var(--success); }
+    .fail { color: var(--danger); }
+
+    .rt-summary-number { font-size: 4rem; font-weight: 800; color: var(--success); text-align: center; }
+    .rt-summary-label { text-align: center; color: var(--muted); font-size: 0.82rem; font-family: 'Space Mono', monospace; }
+
+    .history-item {
+      background: var(--surface);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .history-item:hover { border-color: var(--accent); transform: translateX(4px); }
+    .history-problem { font-size: 0.9rem; color: var(--text); margin-bottom: 8px; }
+    .history-meta { display: flex; gap: 10px; align-items: center; }
+
+    .history-badge {
+      background: rgba(167,139,250,0.1);
+      color: var(--accent3);
+      border-radius: 8px;
+      padding: 3px 10px;
+      font-size: 0.72rem;
+      font-family: 'Space Mono', monospace;
+      border: 1px solid rgba(167,139,250,0.2);
+    }
+
+    .history-time { color: var(--muted); font-size: 0.72rem; font-family: 'Space Mono', monospace; }
+
+    .empty-state { text-align: center; color: var(--muted); padding: 48px; font-size: 0.88rem; font-family: 'Space Mono', monospace; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--surface); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
+</head>
+<body>
+<div class="orb2"></div>
+
+<div class="container">
+
+  <div class="header">
+    <div class="header-badge">🤖 AI AGENT v2.0</div>
+    <h1>AI Playbook Agent</h1>
+    <p>Describe any problem — the agent picks the right playbook, reasons step by step, and delivers a precise solution.</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showPage('agent', this)">⚡ Agent</button>
+    <button class="tab" onclick="showPage('evals', this)">📊 Evals</button>
+    <button class="tab" onclick="showPage('redteam', this)">🔴 Red Team</button>
+    <button class="tab" onclick="showPage('history', this)">📋 History</button>
+    <button class="tab" onclick="showPage('insights', this)">🔬 Insights</button>
+  </div>
+
+  <!-- AGENT PAGE -->
+  <div class="page active" id="page-agent">
+    <div class="card">
+      <div class="section-label">Describe Your Problem</div>
+      <div class="input-wrapper">
+        <textarea id="problemInput" placeholder="e.g. My Python code crashes with an IndexError on line 5..."></textarea>
+        <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Voice input">🎤</button>
+      </div>
+      <button class="btn btn-primary" id="analyzeBtn" onclick="analyze()">⚡ Analyze with AI Agent</button>
+    </div>
+
+    <div class="card" id="thinkingCard" style="display:none">
+      <div class="section-label">Agent Thinking</div>
+      <div class="thinking" id="thinkingSteps"></div>
+    </div>
+
+    <div class="card" id="resultCard" style="display:none">
+      <div class="section-label">Solution</div>
+      <div id="playbookBadge" class="playbook-badge"></div>
+
+      <div class="confidence-wrapper" id="confidenceWrapper" style="display:none">
+        <div class="confidence-header">
+          <span class="confidence-label">Confidence Score</span>
+          <span class="confidence-value" id="confidenceValue">—</span>
+        </div>
+        <div class="confidence-track">
+          <div class="confidence-fill" id="confidenceFill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="solution-tabs">
+        <button class="sol-tab active" onclick="showSolTab('solution', this)">💬 Solution</button>
+        <button class="sol-tab" onclick="showSolTab('diff', this)">🔀 Code Diff</button>
+      </div>
+
+      <div id="solutionView">
+        <div class="solution-box" id="solutionBox"></div>
+      </div>
+
+      <div class="diff-wrapper" id="diffView">
+        <div class="diff-panel diff-before">
+          <div class="diff-header">❌ BEFORE (Problematic)</div>
+          <div class="diff-code" id="diffBefore"></div>
+        </div>
+        <div class="diff-panel diff-after">
+          <div class="diff-header">✅ AFTER (Fixed)</div>
+          <div class="diff-code" id="diffAfter"></div>
+        </div>
+      </div>
+
+      <!-- RLHF Feedback -->
+      <div class="feedback-section" id="feedbackSection" style="display:none">
+        <div class="section-label">Was this solution helpful?</div>
+        <div class="feedback-buttons">
+          <button class="feedback-btn up" onclick="submitFeedback('up')">👍</button>
+          <button class="feedback-btn down" onclick="submitFeedback('down')">👎</button>
+          <span id="feedbackMsg" style="color:var(--muted); font-size:0.8rem; font-family:'Space Mono',monospace;"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVAL DASHBOARD PAGE -->
+  <div class="page" id="page-evals">
+    <div class="card">
+      <div class="section-label">Eval Dashboard</div>
+      <div id="evalContent">
+        <div class="empty-state">// Click "Run Evals" to execute 210 test cases</div>
+      </div>
+      <button class="btn btn-secondary" onclick="loadEvals()">📊 Run Evals</button>
+    </div>
+  </div>
+
+  <!-- RED TEAM PAGE -->
+  <div class="page" id="page-redteam">
+    <div class="card">
+      <div class="section-label">Red Team Testing</div>
+      <p style="color:var(--muted); font-size:0.85rem; margin-bottom:16px; font-family:'Space Mono',monospace; line-height:1.6;">Adversarial inputs designed to confuse, trick, or break the agent. Tests robustness and graceful failure handling.</p>
+      <button class="btn btn-danger" onclick="runRedTeam()" id="redteamBtn">🔴 Run Red Team Tests</button>
+    </div>
+    <div id="redteamResults"></div>
+  </div>
+
+  <!-- HISTORY PAGE -->
+  <div class="page" id="page-history">
+    <div class="card">
+      <div class="section-label">Session History</div>
+      <div id="historyList">
+        <div class="empty-state">// No history yet. Analyze a problem first.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSIGHTS PAGE -->
+  <div class="page" id="page-insights">
+    <div class="card">
+      <div class="section-label">🔬 RLHF Insights — User Feedback Analytics</div>
+      <p style="color:var(--muted); font-size:0.82rem; margin-bottom:20px; font-family:'Space Mono',monospace; line-height:1.6;">Real-time feedback loop. Every 👍/👎 trains the system. This is how OpenAI and Anthropic improve their models.</p>
+      <div id="insightsContent">
+        <div class="empty-state">// No feedback yet. Analyze problems and rate solutions.</div>
+      </div>
+      <button class="btn btn-secondary" onclick="loadInsights()">🔬 Load Insights</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const steps = [
+    { icon: "🔍", text: "Reading problem..." },
+    { icon: "📖", text: "Matching playbook..." },
+    { icon: "🧠", text: "Reasoning step by step..." },
+    { icon: "🛠️", text: "Building solution..." },
+    { icon: "✅", text: "Done." }
+  ];
+
+  let sessionHistory = [];
+  let recognition = null;
+  let isListening = false;
+  let lastResult = null;
+
+  function toggleVoice() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert("Voice input not supported. Try Chrome.");
+      return;
+    }
+    if (isListening) { recognition.stop(); return; }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.onstart = () => {
+      isListening = true;
+      document.getElementById('voiceBtn').classList.add('listening');
+      document.getElementById('voiceBtn').textContent = '🔴';
+    };
+    recognition.onresult = (e) => {
+      document.getElementById('problemInput').value = e.results[0][0].transcript;
+    };
+    recognition.onend = () => {
+      isListening = false;
+      document.getElementById('voiceBtn').classList.remove('listening');
+      document.getElementById('voiceBtn').textContent = '🎤';
+    };
+    recognition.start();
+  }
+
+  function showPage(name, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    el.classList.add('active');
+  }
+
+  function showSolTab(tab, el) {
+    document.querySelectorAll('.sol-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    if (tab === 'solution') {
+      document.getElementById('solutionView').style.display = 'block';
+      document.getElementById('diffView').classList.remove('active');
+    } else {
+      document.getElementById('solutionView').style.display = 'none';
+      document.getElementById('diffView').classList.add('active');
+    }
+  }
+
+  function extractConfidence(text) {
+    const match = text.match(/confidence[^\d]*(\d+)/i);
+    return match ? parseInt(match[1]) : null;
+  }
+
+  function extractCodeBlocks(text) {
+    const blocks = [];
+    const regex = /```[\w]*\n?([\s\S]*?)```/g;
+    let match;
+    while ((match = regex.exec(text)) !== null) blocks.push(match[1].trim());
+    return blocks;
+  }
+
+  async function analyze() {
+    const problem = document.getElementById("problemInput").value.trim();
+    if (!problem) { alert("Please describe your problem first!"); return; }
+
+    const btn = document.getElementById("analyzeBtn");
+    btn.disabled = true;
+    btn.textContent = "Agent is working...";
+
+    document.getElementById("thinkingCard").style.display = "block";
+    document.getElementById("resultCard").style.display = "none";
+    const thinkingSteps = document.getElementById("thinkingSteps");
+    thinkingSteps.innerHTML = "";
+
+    for (let i = 0; i < steps.length - 1; i++) {
+      await new Promise(r => setTimeout(r, 650));
+      const div = document.createElement("div");
+      div.className = "step";
+      div.innerHTML = `<span class="step-icon">${steps[i].icon}</span><span class="step-text">${steps[i].text}</span>`;
+      thinkingSteps.appendChild(div);
+    }
+
+    try {
+      const response = await fetch("http://localhost:8000/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ problem })
+      });
+
+      const data = await response.json();
+
+      const finalStep = document.createElement("div");
+      finalStep.className = "step";
+      finalStep.innerHTML = `<span class="step-icon">✅</span><span class="step-text">Done.</span>`;
+      thinkingSteps.appendChild(finalStep);
+
+      document.getElementById("resultCard").style.display = "block";
+      document.getElementById("playbookBadge").textContent = "📋 " + data.playbook;
+      document.getElementById("solutionBox").textContent = data.solution;
+
+      // Confidence
+      const conf = extractConfidence(data.solution);
+      if (conf) {
+        document.getElementById("confidenceWrapper").style.display = "block";
+        document.getElementById("confidenceValue").textContent = conf + "/100";
+        setTimeout(() => { document.getElementById("confidenceFill").style.width = conf + "%"; }, 100);
+        const color = conf >= 80 ? "var(--success)" : conf >= 60 ? "var(--warning)" : "var(--danger)";
+        document.getElementById("confidenceValue").style.color = color;
+      }
+
+      // Code diff
+      const codeBlocks = extractCodeBlocks(data.solution);
+      if (codeBlocks.length >= 2) {
+        document.getElementById("diffBefore").textContent = codeBlocks[0];
+        document.getElementById("diffAfter").textContent = codeBlocks[1];
+      } else if (codeBlocks.length === 1) {
+        document.getElementById("diffBefore").textContent = "// Original code not shown\n// Paste your code here";
+        document.getElementById("diffAfter").textContent = codeBlocks[0];
+      } else {
+        document.getElementById("diffBefore").textContent = "// No code blocks detected";
+        document.getElementById("diffAfter").textContent = "// No code blocks detected";
+      }
+
+      // RLHF feedback
+      lastResult = { playbook: data.playbook, problem: problem };
+      const fs = document.getElementById("feedbackSection");
+      fs.style.display = "block";
+      fs.querySelectorAll("button").forEach(b => b.disabled = false);
+      document.getElementById("feedbackMsg").textContent = "";
+
+      // History
+      sessionHistory.unshift({ problem, playbook: data.playbook, solution: data.solution, time: new Date().toLocaleTimeString() });
+      if (sessionHistory.length > 5) sessionHistory.pop();
+      updateHistory();
+
+    } catch (err) {
+      alert("Error connecting to backend. Make sure the server is running.");
+    }
+
+    btn.disabled = false;
+    btn.textContent = "⚡ Analyze with AI Agent";
+  }
+
+  async function submitFeedback(rating) {
+    if (!lastResult) return;
+    try {
+      await fetch("http://localhost:8000/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playbook: lastResult.playbook, rating, problem: lastResult.problem })
+      });
+      const msg = document.getElementById("feedbackMsg");
+      msg.textContent = rating === "up" ? "✅ Thanks! Feedback recorded." : "📝 Noted. We'll improve.";
+      msg.style.color = rating === "up" ? "var(--success)" : "var(--danger)";
+      document.getElementById("feedbackSection").querySelectorAll("button").forEach(b => b.disabled = true);
+    } catch (err) { console.log("Feedback error", err); }
+  }
+
+  async function loadEvals() {
+    document.getElementById("evalContent").innerHTML = '<div class="empty-state">// Running 210 test cases...</div>';
+    try {
+      const response = await fetch("http://localhost:8000/evals");
+      const data = await response.json();
+
+      const barsHtml = Object.entries(data.playbook_stats).map(([name, stats]) => {
+        const pct = Math.round((stats.passed / stats.total) * 100);
+        return `
+          <div class="playbook-bar">
+            <div class="bar-meta">
+              <span class="bar-name">${name}</span>
+              <span class="bar-pct">${stats.passed}/${stats.total} · ${pct}%</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:0%" data-width="${pct}%"></div>
+            </div>
+          </div>`;
+      }).join('');
+
+      const failedHtml = data.failed_cases.map(f => `
+        <div class="failed-case">
+          <div class="failed-problem">❌ "${f.problem}"</div>
+          <div class="failed-meta">expected: ${f.expected} → got: ${f.got}</div>
+        </div>`).join('');
+
+      document.getElementById("evalContent").innerHTML = `
+        <div class="accuracy-hero">
+          <div class="accuracy-number">${data.accuracy}%</div>
+          <div class="accuracy-sub">accuracy · ${data.total} test cases</div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-box"><div class="stat-number" style="color:var(--accent)">${data.total}</div><div class="stat-label">Total</div></div>
+          <div class="stat-box"><div class="stat-number" style="color:var(--success)">${data.passed}</div><div class="stat-label">Passed</div></div>
+          <div class="stat-box"><div class="stat-number" style="color:var(--danger)">${data.failed_count}</div><div class="stat-label">Failed</div></div>
+        </div>
+        <div class="section-label" style="margin-bottom:16px">Accuracy by Playbook</div>
+        ${barsHtml}
+        <div class="section-label" style="margin-top:24px; margin-bottom:12px">Sample Failed Cases</div>
+        ${failedHtml}
+      `;
+
+      setTimeout(() => {
+        document.querySelectorAll('.bar-fill').forEach(bar => { bar.style.width = bar.dataset.width; });
+      }, 100);
+
+    } catch (err) {
+      document.getElementById("evalContent").innerHTML = '<div class="empty-state">// Error. Make sure server is running.</div>';
+    }
+  }
+
+  const redTeamInputs = [
+    { input: "asdfjkl qwerty random gibberish", expected: "Should handle gracefully" },
+    { input: "Fix my code optimize test review refactor security", expected: "Multiple keywords — ambiguous" },
+    { input: "", expected: "Empty input" },
+    { input: "I need help", expected: "Vague input" },
+    { input: "My code is perfect and works great", expected: "No problem stated" },
+    { input: "debug explain optimize secure test refactor review", expected: "All keywords present" },
+    { input: "x = 1", expected: "Minimal code, no context" },
+    { input: "HELP ME PLEASE MY CODE IS BROKEN FIX IT NOW", expected: "Aggressive/emotional input" },
+    { input: "SELECT * FROM users WHERE id = 1", expected: "SQL — security or explanation?" },
+    { input: "What is the meaning of life in Python", expected: "Philosophical/trick question" }
+  ];
+
+  async function runRedTeam() {
+    const btn = document.getElementById("redteamBtn");
+    btn.disabled = true;
+    btn.textContent = "Running red team tests...";
+    let resultsHtml = '';
+    let passed = 0;
+
+    for (const test of redTeamInputs) {
+      try {
+        const response = await fetch("http://localhost:8000/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ problem: test.input || "empty input" })
+        });
+        const data = await response.json();
+        const handled = data.solution && data.solution.length > 10;
+        if (handled) passed++;
+        resultsHtml += `
+          <div class="redteam-card">
+            <div class="rt-input">› "${test.input || '(empty)'}"</div>
+            <div class="rt-status ${handled ? 'pass' : 'fail'}">
+              ${handled ? '✅ Handled gracefully' : '❌ Failed'} — playbook: <b>${data.playbook}</b>
+            </div>
+            <div class="rt-expected">expected: ${test.expected}</div>
+          </div>`;
+      } catch (err) {
+        resultsHtml += `
+          <div class="redteam-card">
+            <div class="rt-input">› "${test.input}"</div>
+            <div class="rt-status fail">❌ Server error</div>
+          </div>`;
+      }
+    }
+
+    document.getElementById("redteamResults").innerHTML = `
+      <div class="card">
+        <div class="rt-summary-number">${passed}/${redTeamInputs.length}</div>
+        <div class="rt-summary-label">adversarial inputs handled gracefully</div>
+      </div>
+      ${resultsHtml}`;
+
+    btn.disabled = false;
+    btn.textContent = "🔴 Run Red Team Again";
+  }
+
+  function updateHistory() {
+    const list = document.getElementById("historyList");
+    if (sessionHistory.length === 0) {
+      list.innerHTML = '<div class="empty-state">// No history yet.</div>';
+      return;
+    }
+    list.innerHTML = sessionHistory.map(h => `
+      <div class="history-item">
+        <div class="history-problem">${h.problem}</div>
+        <div class="history-meta">
+          <span class="history-badge">${h.playbook}</span>
+          <span class="history-time">${h.time}</span>
+        </div>
+      </div>`).join('');
+  }
+
+  async function loadInsights() {
+    try {
+      const response = await fetch("http://localhost:8000/insights");
+      const data = await response.json();
+
+      if (data.total === 0) {
+        document.getElementById("insightsContent").innerHTML =
+          '<div class="empty-state">// No feedback yet. Rate some solutions first.</div>';
+        return;
+      }
+
+      const satisfactionColor = data.satisfaction >= 80 ? "var(--success)" : data.satisfaction >= 60 ? "var(--warning)" : "var(--danger)";
+
+      const playbookRows = Object.entries(data.by_playbook).map(([name, stats]) => {
+        const total = stats.up + stats.down;
+        const pct = Math.round((stats.up / total) * 100);
+        return `
+          <div class="playbook-bar">
+            <div class="bar-meta">
+              <span class="bar-name">${name}</span>
+              <span class="bar-pct">👍 ${stats.up} · 👎 ${stats.down} · ${pct}% satisfied</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${pct}%; background: linear-gradient(90deg, var(--accent2), var(--success))"></div>
+            </div>
+          </div>`;
+      }).join('');
+
+      document.getElementById("insightsContent").innerHTML = `
+        <div class="accuracy-hero">
+          <div class="accuracy-number" style="color:${satisfactionColor}; -webkit-text-fill-color:${satisfactionColor}">${data.satisfaction}%</div>
+          <div class="accuracy-sub">user satisfaction score</div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-box"><div class="stat-number" style="color:var(--accent)">${data.total}</div><div class="stat-label">Total Ratings</div></div>
+          <div class="stat-box"><div class="stat-number" style="color:var(--success)">${data.thumbs_up}</div><div class="stat-label">👍 Helpful</div></div>
+          <div class="stat-box"><div class="stat-number" style="color:var(--danger)">${data.thumbs_down}</div><div class="stat-label">👎 Not Helpful</div></div>
+        </div>
+        <div class="section-label" style="margin-bottom:16px">Satisfaction by Playbook</div>
+        ${playbookRows}
+      `;
+    } catch(err) { console.log("Insights error", err); }
+  }
+</script>
+</body>
+</html>

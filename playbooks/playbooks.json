@@ -1,0 +1,44 @@
+[
+    {
+      "id": "debugging",
+      "name": "Code Debugging",
+      "description": "Find and fix bugs in code",
+      "keywords": ["bug", "error", "fix", "crash", "broken", "not working", "exception", "traceback", "indexerror", "typeerror", "keyerror", "attributeerror", "runtime", "infinite loop", "wrong output", "logic error", "panics", "nullpointer", "syntax error", "unexpected behavior"]
+    },
+    {
+      "id": "explanation",
+      "name": "Code Explanation",
+      "description": "Explain what code does line by line",
+      "keywords": ["explain", "what does", "understand", "how does", "meaning", "what is", "difference between", "purpose of", "concept of", "how works"]
+    },
+    {
+      "id": "optimization",
+      "name": "Performance Optimization",
+      "description": "Make code faster and more efficient",
+      "keywords": ["slow", "optimize", "performance", "make this loop faster", "efficient", "speed up", "too long to finish", "reduce memory", "cache results", "lazy load", "multiprocessing", "reduce api response", "o(n", "improve performance", "docker image", "renders too slowly", "api calls taking"]
+    },
+    {
+      "id": "security",
+      "name": "Security Check",
+      "description": "Find security vulnerabilities in code",
+      "keywords": ["security", "vulnerable", "secure", "hack", "sql injection", "injection vulnerability", "injection attack", "encrypt", "password", "plain text", "csrf", "xss", "oauth", "jwt", "tokens", "sanitize", "rate limiting", "https", "brute force", "sensitive data", "api keys", "hardcoded", "authentication system", "validate user input", "directory traversal", "safe from"]
+    },
+    {
+      "id": "testing",
+      "name": "Write Unit Tests",
+      "description": "Generate unit tests for code",
+      "keywords": ["test", "unit test", "testing", "coverage", "assert", "mock", "integration", "regression", "pytest", "test suite", "test cases", "end to end", "performance test", "security test", "write a test", "how to test", "need to test"]
+    },
+    {
+      "id": "refactor",
+      "name": "Refactor Code",
+      "description": "Clean up and restructure code",
+      "keywords": ["refactor", "clean", "restructure", "messy", "readable", "reorganize", "solid", "dry", "duplicate", "large class", "single responsibility", "coupling", "cohesion", "design pattern", "factory", "hard to maintain", "nested", "too many parameters", "reusable", "naming", "split", "architecture", "too long and", "not clean", "improve the structure", "code structure"]
+    },
+    {
+      "id": "review",
+      "name": "Code Review",
+      "description": "Review code for best practices",
+      "keywords": ["review", "feedback", "best practice", "check my code", "check if my code", "evaluate", "production ready", "pep8", "well designed", "maintainable", "scalable", "documentation", "logging implementation", "caching strategy", "deployment", "microservices", "dependency", "ci cd", "connection pooling", "error handling approach", "edge cases", "well written"]
+    }
+  ]
