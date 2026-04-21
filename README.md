@@ -193,4 +193,4 @@ playbook-agent/
 
 ---
 
-*Built in one week. Deployed live. Validated with data.*
+*Built and deployed as a personal project. Validated with automated evals and adversarial testing.*
