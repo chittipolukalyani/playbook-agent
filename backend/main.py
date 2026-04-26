@@ -54,7 +54,6 @@ def match_playbook(problem: str):
 @app.post("/analyze")
 async def analyze(query: Query):
     matched = match_playbook(query.problem)
-
     prompt = f"""You are an expert AI assistant using the '{matched["name"]}' playbook.
 
 Problem: {query.problem}
@@ -72,7 +71,6 @@ Be clear, specific and helpful."""
         model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}]
     )
-
     return {
         "playbook": matched["name"],
         "playbook_id": matched["id"],
@@ -81,19 +79,18 @@ Be clear, specific and helpful."""
     }
 
 
-# ============ PLAYBOOKS ============
+# ============ UTILS ============
 @app.get("/playbooks")
 async def get_playbooks():
     return playbooks
 
 
-# ============ HEALTH ============
 @app.get("/health")
 async def health():
     return {"status": "running"}
 
 
-# ============ PLAYBOOK EVALS ============
+# ============ PLAYBOOK EVALS (210 test cases) ============
 @app.get("/evals")
 async def run_evals():
     evals_path = os.path.join(BASE_DIR, "evals", "test_cases.json")
@@ -118,119 +115,19 @@ async def run_evals():
             passed += 1
             playbook_stats[expected]["passed"] += 1
         else:
-            failed.append({
-                "problem": test["problem"],
-                "expected": expected,
-                "got": result_id
-            })
-
-    accuracy = round((passed / total) * 100, 1)
+            failed.append({"problem": test["problem"], "expected": expected, "got": result_id})
 
     return {
         "total": total,
         "passed": passed,
         "failed_count": total - passed,
-        "accuracy": accuracy,
+        "accuracy": round((passed / total) * 100, 1),
         "failed_cases": failed[:10],
         "playbook_stats": playbook_stats
     }
 
 
-# ============ FEEDBACK ============
-@app.post("/feedback")
-async def store_feedback(feedback: Feedback):
-    feedback_store.append({
-        "playbook": feedback.playbook,
-        "rating": feedback.rating,
-        "problem": feedback.problem
-    })
-    return {"status": "saved"}
-
-
-# ============ INSIGHTS ============
-@app.get("/insights")
-async def get_insights():
-    if not feedback_store:
-        return {"total": 0, "satisfaction": 0, "by_playbook": {}}
-
-    total = len(feedback_store)
-    thumbs_up = sum(1 for f in feedback_store if f["rating"] == "up")
-    satisfaction = round((thumbs_up / total) * 100, 1)
-
-    by_playbook = {}
-    for f in feedback_store:
-        pb = f["playbook"]
-        if pb not in by_playbook:
-            by_playbook[pb] = {"up": 0, "down": 0}
-        by_playbook[pb][f["rating"]] += 1
-
-    return {
-        "total": total,
-        "thumbs_up": thumbs_up,
-        "thumbs_down": total - thumbs_up,
-        "satisfaction": satisfaction,
-        "by_playbook": by_playbook
-    }
-
-
-# ============ MODEL EVALS ============
-@app.post("/model-eval")
-async def model_eval(query: Query):
-    matched = match_playbook(query.problem)
-
-    eval_prompt = f"""You are an AI quality evaluator. Evaluate this problem and solution quality.
-
-Problem: {query.problem}
-Playbook Used: {matched["name"]}
-
-Generate a solution and then evaluate it on these criteria:
-1. RELEVANCE (0-100): Is the solution relevant to the problem?
-2. COMPLETENESS (0-100): Does it cover all aspects?
-3. CLARITY (0-100): Is it clear and understandable?
-4. ACTIONABILITY (0-100): Can the user act on this?
-5. OVERALL CONFIDENCE (0-100): Overall quality score
-
-Format your response EXACTLY like this:
-SOLUTION:
-[your solution here]
-
-EVALUATION:
-RELEVANCE: [score]
-COMPLETENESS: [score]
-CLARITY: [score]
-ACTIONABILITY: [score]
-CONFIDENCE: [score]
-VERDICT: [PASS if average >= 70, FAIL if below 70]"""
-
-    response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role": "user", "content": eval_prompt}]
-    )
-
-    text = response.choices[0].message.content
-
-    scores = {}
-    for metric in ["RELEVANCE", "COMPLETENESS", "CLARITY", "ACTIONABILITY", "CONFIDENCE"]:
-        match = re.search(rf"{metric}:\s*(\d+)", text)
-        scores[metric] = int(match.group(1)) if match else 75
-
-    average = sum(scores.values()) / len(scores)
-    verdict = "PASS" if average >= 70 else "FAIL"
-
-    solution_match = re.search(r"SOLUTION:\n(.*?)(?=EVALUATION:|$)", text, re.DOTALL)
-    solution = solution_match.group(1).strip() if solution_match else text
-
-    return {
-        "playbook": matched["name"],
-        "solution": solution,
-        "scores": scores,
-        "average": round(average, 1),
-        "verdict": verdict,
-        "problem": query.problem
-    }
-
-
-# ============ TEST EVALS ============
+# ============ TEST EVALS (category breakdown) ============
 @app.get("/test-evals")
 async def test_evals():
     evals_path = os.path.join(BASE_DIR, "evals", "test_cases.json")
@@ -278,7 +175,59 @@ async def test_evals():
     }
 
 
-# ============ RED TEAM EVALS ============
+# ============ MODEL EVALS (solution quality scorer) ============
+@app.post("/model-eval")
+async def model_eval(query: Query):
+    matched = match_playbook(query.problem)
+    eval_prompt = f"""You are an AI quality evaluator.
+
+Problem: {query.problem}
+Playbook Used: {matched["name"]}
+
+Generate a solution and evaluate it on these criteria:
+1. RELEVANCE (0-100): Is the solution relevant to the problem?
+2. COMPLETENESS (0-100): Does it cover all aspects?
+3. CLARITY (0-100): Is it clear and understandable?
+4. ACTIONABILITY (0-100): Can the user act on this?
+5. CONFIDENCE (0-100): Overall quality score
+
+Format EXACTLY like this:
+SOLUTION:
+[your solution here]
+
+EVALUATION:
+RELEVANCE: [score]
+COMPLETENESS: [score]
+CLARITY: [score]
+ACTIONABILITY: [score]
+CONFIDENCE: [score]
+VERDICT: [PASS if average >= 70, FAIL if below 70]"""
+
+    response = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": eval_prompt}]
+    )
+    text = response.choices[0].message.content
+    scores = {}
+    for metric in ["RELEVANCE", "COMPLETENESS", "CLARITY", "ACTIONABILITY", "CONFIDENCE"]:
+        match = re.search(rf"{metric}:\s*(\d+)", text)
+        scores[metric] = int(match.group(1)) if match else 75
+
+    average = sum(scores.values()) / len(scores)
+    solution_match = re.search(r"SOLUTION:\n(.*?)(?=EVALUATION:|$)", text, re.DOTALL)
+    solution = solution_match.group(1).strip() if solution_match else text
+
+    return {
+        "playbook": matched["name"],
+        "solution": solution,
+        "scores": scores,
+        "average": round(average, 1),
+        "verdict": "PASS" if average >= 70 else "FAIL",
+        "problem": query.problem
+    }
+
+
+# ============ RED TEAM EVALS (30 adversarial cases) ============
 @app.get("/redteam-evals")
 async def redteam_evals():
     red_team_cases = [
@@ -351,7 +300,7 @@ async def redteam_evals():
     }
 
 
-# ============ WRITTEN EVALS ============
+# ============ WRITTEN EVALS (AI evaluates AI) ============
 @app.get("/written-evals")
 async def written_evals():
     written_cases = [
@@ -371,16 +320,12 @@ async def written_evals():
         matched = match_playbook(case["problem"])
         playbook_correct = matched["id"] == case["playbook"]
 
-        eval_prompt = f"""Evaluate this AI response quality for the problem below.
+        eval_prompt = f"""Evaluate this AI response quality.
 Problem: {case["problem"]}
 Expected Playbook: {case["playbook"]}
 Actual Playbook Used: {matched["name"]}
 
-Rate the solution approach on:
-- Playbook Match (correct strategy selected?)
-- Expected Quality (would this approach solve the problem?)
-
-Respond in exactly this format:
+Respond EXACTLY like this:
 PLAYBOOK_MATCH: [YES/NO]
 QUALITY: [HIGH/MEDIUM/LOW]
 SCORE: [0-100]
@@ -390,9 +335,7 @@ REASON: [one sentence]"""
             model="llama-3.1-8b-instant",
             messages=[{"role": "user", "content": eval_prompt}]
         )
-
         text = response.choices[0].message.content
-
         score_match = re.search(r"SCORE:\s*(\d+)", text)
         quality_match = re.search(r"QUALITY:\s*(\w+)", text)
         reason_match = re.search(r"REASON:\s*(.+)", text)
@@ -400,7 +343,6 @@ REASON: [one sentence]"""
         score = int(score_match.group(1)) if score_match else 75
         quality = quality_match.group(1) if quality_match else "MEDIUM"
         reason = reason_match.group(1) if reason_match else "No reason provided"
-
         status = "✅ PASS" if playbook_correct and score >= 70 else "❌ FAIL"
         if status == "✅ PASS":
             passed += 1
@@ -422,4 +364,117 @@ REASON: [one sentence]"""
         "failed": len(written_cases) - passed,
         "accuracy": round((passed / len(written_cases)) * 100, 1),
         "results": results
+    }
+
+
+# ============ WRITTEN TEST CASES (keyword + step grading) ============
+@app.get("/written-test-evals")
+async def written_test_evals():
+    written_path = os.path.join(BASE_DIR, "evals", "written_test_cases.json")
+    with open(written_path, encoding="utf-8") as f:
+        written_cases = json.load(f)
+
+    results = []
+    passed = 0
+    category_stats = {}
+
+    for case in written_cases:
+        matched = match_playbook(case["problem"])
+        playbook_correct = matched["id"] == case["expected_playbook"]
+
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": f"""You are an expert AI assistant using the '{matched["name"]}' playbook.
+
+Problem: {case["problem"]}
+
+Follow these steps exactly:
+Step 1: Understand the problem
+Step 2: Identify the core issue
+Step 3: Apply the {matched["name"]} approach
+Step 4: Give the solution with explanation
+Step 5: Give a confidence score out of 100
+
+Be clear, specific and helpful."""}]
+        )
+
+        solution = response.choices[0].message.content
+        solution_lower = solution.lower()
+
+        keywords_found = [kw for kw in case["expected_keywords"] if kw.lower() in solution_lower]
+        keyword_score = round((len(keywords_found) / len(case["expected_keywords"])) * 100)
+        confidence_match = re.search(r"confidence[^\d]*(\d+)", solution, re.IGNORECASE)
+        confidence = int(confidence_match.group(1)) if confidence_match else 70
+        step_count = len(re.findall(r"step \d", solution, re.IGNORECASE))
+        has_steps = step_count >= case["min_steps"]
+        overall_pass = playbook_correct and keyword_score >= 60 and has_steps
+
+        if overall_pass:
+            passed += 1
+
+        cat = case["category"]
+        if cat not in category_stats:
+            category_stats[cat] = {"total": 0, "passed": 0}
+        category_stats[cat]["total"] += 1
+        if overall_pass:
+            category_stats[cat]["passed"] += 1
+
+        results.append({
+            "id": case["id"],
+            "problem": case["problem"],
+            "category": case["category"],
+            "expected_playbook": case["expected_playbook"],
+            "actual_playbook": matched["name"],
+            "playbook_correct": playbook_correct,
+            "keywords_found": keywords_found,
+            "keyword_score": keyword_score,
+            "confidence": confidence,
+            "has_steps": has_steps,
+            "status": "✅ PASS" if overall_pass else "❌ FAIL"
+        })
+
+    return {
+        "total": len(written_cases),
+        "passed": passed,
+        "failed": len(written_cases) - passed,
+        "accuracy": round((passed / len(written_cases)) * 100, 1),
+        "category_stats": category_stats,
+        "results": results
+    }
+
+
+# ============ FEEDBACK ============
+@app.post("/feedback")
+async def store_feedback(feedback: Feedback):
+    feedback_store.append({
+        "playbook": feedback.playbook,
+        "rating": feedback.rating,
+        "problem": feedback.problem
+    })
+    return {"status": "saved"}
+
+
+# ============ INSIGHTS ============
+@app.get("/insights")
+async def get_insights():
+    if not feedback_store:
+        return {"total": 0, "satisfaction": 0, "by_playbook": {}}
+
+    total = len(feedback_store)
+    thumbs_up = sum(1 for f in feedback_store if f["rating"] == "up")
+    satisfaction = round((thumbs_up / total) * 100, 1)
+
+    by_playbook = {}
+    for f in feedback_store:
+        pb = f["playbook"]
+        if pb not in by_playbook:
+            by_playbook[pb] = {"up": 0, "down": 0}
+        by_playbook[pb][f["rating"]] += 1
+
+    return {
+        "total": total,
+        "thumbs_up": thumbs_up,
+        "thumbs_down": total - thumbs_up,
+        "satisfaction": satisfaction,
+        "by_playbook": by_playbook
     }
