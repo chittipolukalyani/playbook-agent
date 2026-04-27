@@ -27,13 +27,11 @@
     .orb2 { position: fixed; bottom: -200px; left: -200px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(244,114,182,0.05) 0%, transparent 70%); pointer-events: none; z-index: 0; }
     .container { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 48px 24px; }
 
-    /* HEADER */
     .header { text-align: center; margin-bottom: 48px; animation: fadeDown 0.6s ease both; }
     .header-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(110,231,247,0.08); border: 1px solid rgba(110,231,247,0.2); border-radius: 20px; padding: 6px 16px; font-size: 0.8rem; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; font-family: 'Space Mono', monospace; }
     .header h1 { font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 14px; background: linear-gradient(135deg, var(--accent) 0%, var(--accent3) 50%, var(--accent2) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .header p { color: var(--muted); font-size: 1.05rem; max-width: 520px; margin: 0 auto; line-height: 1.7; }
 
-    /* TABS */
     .tab-group-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); font-family: 'Space Mono', monospace; margin-bottom: 8px; padding-left: 4px; }
     .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 8px; margin-bottom: 10px; animation: fadeDown 0.6s ease 0.1s both; }
     .tab { padding: 13px 8px; border-radius: 10px; border: none; background: transparent; color: var(--muted); cursor: pointer; font-size: 0.9rem; font-weight: 600; font-family: 'Syne', sans-serif; transition: all 0.2s; white-space: nowrap; text-align: center; }
@@ -41,30 +39,25 @@
     .tab.active { background: var(--card); color: var(--accent); border: 1px solid var(--border); box-shadow: 0 0 20px rgba(110,231,247,0.1); }
     .tab-divider { margin-bottom: 32px; }
 
-    /* PAGES */
     .page { display: none; animation: fadeUp 0.3s ease both; }
     .page.active { display: block; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* CARDS */
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px; margin-bottom: 20px; position: relative; overflow: hidden; }
     .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(110,231,247,0.3), transparent); }
     .section-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 3px; color: var(--muted); margin-bottom: 16px; font-family: 'Space Mono', monospace; }
 
-    /* INPUT */
     .input-wrapper { position: relative; }
     textarea { width: 100%; height: 130px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 1rem; font-family: 'Syne', sans-serif; padding: 16px; resize: none; outline: none; transition: border-color 0.2s, box-shadow 0.2s; line-height: 1.6; }
     textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(110,231,247,0.08); }
     textarea::placeholder { color: var(--muted); }
 
-    /* VOICE */
     .voice-btn { position: absolute; bottom: 12px; right: 12px; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s; padding: 0; margin-top: 0; }
     .voice-btn:hover { border-color: var(--accent); color: var(--accent); }
     .voice-btn.listening { border-color: var(--danger); color: var(--danger); animation: pulse 1s infinite; background: rgba(248,113,113,0.1); }
     @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(248,113,113,0.3); } 50% { box-shadow: 0 0 0 8px rgba(248,113,113,0); } }
 
-    /* BUTTONS */
     .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-size: 1rem; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; transition: all 0.2s; margin-top: 12px; letter-spacing: 0.5px; }
     .btn-primary { background: linear-gradient(135deg, var(--accent) 0%, var(--accent3) 100%); color: #080810; }
     .btn-primary:hover { opacity: 0.9; box-shadow: 0 0 30px rgba(110,231,247,0.3); transform: translateY(-1px); }
@@ -77,14 +70,12 @@
     .btn-session:hover { opacity: 0.9; box-shadow: 0 0 30px rgba(167,139,250,0.3); transform: translateY(-1px); }
     .btn-session:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; }
 
-    /* THINKING */
     .thinking { display: flex; flex-direction: column; gap: 8px; }
     .step { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: var(--surface); border-radius: 10px; border-left: 2px solid var(--accent); animation: slideIn 0.4s ease both; }
     @keyframes slideIn { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }
     .step-icon { font-size: 1.2rem; }
     .step-text { font-size: 0.92rem; color: #94a3b8; font-family: 'Space Mono', monospace; }
 
-    /* SOLUTION */
     .playbook-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(167,139,250,0.1); color: var(--accent3); border: 1px solid rgba(167,139,250,0.3); border-radius: 20px; padding: 6px 16px; font-size: 0.85rem; font-weight: 700; margin-bottom: 16px; font-family: 'Space Mono', monospace; }
     .confidence-wrapper { margin-bottom: 20px; padding: 18px; background: var(--surface); border-radius: 12px; border: 1px solid var(--border); }
     .confidence-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -111,6 +102,11 @@
     .diff-after .diff-header { background: rgba(52,211,153,0.1); color: var(--success); border-bottom: 1px solid rgba(52,211,153,0.2); }
     .diff-code { padding: 16px; font-size: 0.85rem; font-family: 'Space Mono', monospace; white-space: pre-wrap; color: #94a3b8; line-height: 1.7; min-height: 120px; }
 
+    /* CURSOR PROMPT INFO */
+    .cursor-info { background: rgba(110,231,247,0.05); border: 1px solid rgba(110,231,247,0.15); border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; }
+    .cursor-info-label { font-size: 0.7rem; color: var(--accent); font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px; }
+    .cursor-info-text { font-size: 0.82rem; color: var(--muted); font-family: 'Space Mono', monospace; line-height: 1.6; }
+
     /* DEVIN SESSION */
     .session-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
     .session-type-btn { padding: 14px 10px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; font-size: 0.88rem; font-weight: 600; font-family: 'Syne', sans-serif; transition: all 0.2s; text-align: center; }
@@ -120,9 +116,12 @@
     .session-step { background: var(--surface); border-radius: 14px; padding: 20px; margin-bottom: 12px; border: 1px solid var(--border); border-left: 3px solid var(--accent3); animation: slideIn 0.4s ease both; }
     .session-step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
     .session-step-icon { font-size: 1.5rem; }
+    .session-step-info { flex: 1; }
     .session-step-name { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .session-step-meta { display: flex; gap: 8px; margin-top: 4px; align-items: center; }
+    .session-step-tool { background: rgba(110,231,247,0.1); color: var(--accent); border-radius: 6px; padding: 2px 8px; font-size: 0.7rem; font-family: 'Space Mono', monospace; border: 1px solid rgba(110,231,247,0.2); }
     .session-step-desc { font-size: 0.78rem; color: var(--muted); font-family: 'Space Mono', monospace; }
-    .session-step-status { margin-left: auto; color: var(--success); font-size: 0.85rem; font-family: 'Space Mono', monospace; }
+    .session-step-status { color: var(--success); font-size: 0.85rem; font-family: 'Space Mono', monospace; }
     .session-step-output { background: var(--bg); border-radius: 10px; padding: 16px; font-size: 0.88rem; line-height: 1.8; color: #cbd5e1; font-family: 'Space Mono', monospace; white-space: pre-wrap; }
     .session-history-item { background: var(--surface); border-radius: 14px; padding: 18px; margin-bottom: 12px; border: 1px solid var(--border); cursor: pointer; transition: border-color 0.2s; }
     .session-history-item:hover { border-color: var(--accent3); }
@@ -150,7 +149,6 @@
     .failed-problem { color: var(--text); font-size: 0.9rem; margin-bottom: 4px; }
     .failed-meta { color: var(--muted); font-size: 0.78rem; font-family: 'Space Mono', monospace; }
 
-    /* RED TEAM */
     .redteam-card { background: var(--surface); border-radius: 14px; padding: 18px 20px; margin-bottom: 10px; border-left: 3px solid var(--warning); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
     .rt-input { color: var(--text); font-size: 0.9rem; margin-bottom: 6px; font-family: 'Space Mono', monospace; }
     .rt-status { font-size: 0.82rem; margin-bottom: 4px; }
@@ -160,7 +158,6 @@
     .rt-summary-number { font-size: 4rem; font-weight: 800; color: var(--success); text-align: center; }
     .rt-summary-label { text-align: center; color: var(--muted); font-size: 0.85rem; font-family: 'Space Mono', monospace; }
 
-    /* HISTORY */
     .history-item { background: var(--surface); border-radius: 14px; padding: 18px 20px; margin-bottom: 10px; border: 1px solid var(--border); cursor: pointer; transition: border-color 0.2s, transform 0.2s; }
     .history-item:hover { border-color: var(--accent); transform: translateX(4px); }
     .history-problem { font-size: 0.95rem; color: var(--text); margin-bottom: 8px; }
@@ -168,7 +165,6 @@
     .history-badge { background: rgba(167,139,250,0.1); color: var(--accent3); border-radius: 8px; padding: 4px 12px; font-size: 0.75rem; font-family: 'Space Mono', monospace; border: 1px solid rgba(167,139,250,0.2); }
     .history-time { color: var(--muted); font-size: 0.75rem; font-family: 'Space Mono', monospace; }
 
-    /* MODEL EVAL */
     .score-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 16px 0; }
     .score-item { background: var(--surface); border-radius: 12px; padding: 16px; border: 1px solid var(--border); }
     .score-name { font-size: 0.75rem; color: var(--muted); font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
@@ -177,13 +173,11 @@
     .verdict-pass { background: rgba(52,211,153,0.1); color: var(--success); border: 1px solid rgba(52,211,153,0.3); }
     .verdict-fail { background: rgba(248,113,113,0.1); color: var(--danger); border: 1px solid rgba(248,113,113,0.3); }
 
-    /* CATEGORY */
     .category-row { background: var(--surface); border-radius: 12px; padding: 18px; margin-bottom: 12px; border: 1px solid var(--border); }
     .category-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .category-name { font-weight: 700; color: var(--text); font-size: 0.95rem; }
     .category-status { font-size: 0.82rem; font-family: 'Space Mono', monospace; }
 
-    /* WRITTEN */
     .written-item { background: var(--surface); border-radius: 12px; padding: 18px; margin-bottom: 12px; border: 1px solid var(--border); }
     .written-problem { color: var(--text); font-size: 0.92rem; margin-bottom: 10px; line-height: 1.5; }
     .written-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
@@ -203,12 +197,11 @@
 <div class="container">
 
   <div class="header">
-    <div class="header-badge">🤖 AI AGENT v3.0</div>
+    <div class="header-badge">🤖 AI AGENT v3.0 — Cursor Architecture</div>
     <h1>AI Playbook Agent</h1>
-    <p>Describe any problem — the agent picks the right playbook, reasons step by step, and delivers a precise solution.</p>
+    <p>Structured prompts inspired by Cursor's system architecture. Autonomous sessions powered by Devin's workflow model.</p>
   </div>
 
-  <!-- ROW 1 — MAIN -->
   <div class="tab-group-label">Main</div>
   <div class="tabs">
     <button class="tab active" onclick="showPage('agent', this)">⚡ Agent</button>
@@ -217,7 +210,6 @@
     <button class="tab" onclick="showPage('insights', this)">🔬 Insights</button>
   </div>
 
-  <!-- ROW 2 — EVALS -->
   <div class="tab-group-label">Evals & Testing</div>
   <div class="tabs tab-divider">
     <button class="tab" onclick="showPage('evals', this)">📊 Playbook Evals</button>
@@ -228,6 +220,10 @@
 
   <!-- AGENT PAGE -->
   <div class="page active" id="page-agent">
+    <div class="cursor-info">
+      <div class="cursor-info-label">⚙️ Cursor-Style Prompt Architecture</div>
+      <div class="cursor-info-text">This agent uses structured XML prompts inspired by Cursor's system — with sections for &lt;communication&gt;, &lt;playbook_selection&gt;, &lt;tool_awareness&gt;, &lt;problem_solving&gt;, and &lt;output_format&gt;. Based on: roman.pt/posts/cursor-under-the-hood</div>
+    </div>
     <div class="card">
       <div class="section-label">Describe Your Problem</div>
       <div class="input-wrapper">
@@ -282,9 +278,13 @@
 
   <!-- DEVIN SESSION PAGE -->
   <div class="page" id="page-devin">
+    <div class="cursor-info">
+      <div class="cursor-info-label">🤖 Devin Session Model + Cursor Tool Loop</div>
+      <div class="cursor-info-text">Each session uses Cursor's 11-tool architecture: codebase_search, read_file, edit_file, run_terminal_cmd, grep_search, list_dir, file_search, delete_file, fetch_rules, reapply, diff_history. Each step simulates a specific tool call.</div>
+    </div>
     <div class="card">
       <div class="section-label">🤖 Devin-Style Session Agent</div>
-      <p style="color:var(--muted); font-size:0.88rem; margin-bottom:20px; font-family:'Space Mono',monospace; line-height:1.7;">Give a big task. The agent creates a session, breaks it into steps, and executes each one autonomously — just like Devin.</p>
+      <p style="color:var(--muted); font-size:0.88rem; margin-bottom:20px; font-family:'Space Mono',monospace; line-height:1.7;">Give a big task. The agent creates a session with a unique ID, breaks it into 5 autonomous steps, and executes each one using Cursor-style tool calls.</p>
 
       <div class="section-label">1. Choose Session Type</div>
       <div class="session-type-grid">
@@ -300,7 +300,6 @@
       <textarea id="sessionInput" placeholder="e.g. Build a user authentication system with login, logout and password reset..."></textarea>
       <button class="btn btn-session" id="sessionBtn" onclick="startSession()">🚀 Start Devin Session</button>
     </div>
-
     <div id="sessionResult"></div>
     <div id="sessionHistory" style="margin-top:20px"></div>
   </div>
@@ -343,7 +342,7 @@
   <div class="page" id="page-redteam">
     <div class="card">
       <div class="section-label">🔴 Red Team Testing — 10 Adversarial Inputs</div>
-      <p style="color:var(--muted); font-size:0.88rem; margin-bottom:16px; font-family:'Space Mono',monospace; line-height:1.7;">Adversarial inputs designed to confuse, trick, or break the agent. Tests robustness across attack categories.</p>
+      <p style="color:var(--muted); font-size:0.88rem; margin-bottom:16px; font-family:'Space Mono',monospace; line-height:1.7;">Adversarial inputs designed to confuse, trick, or break the agent. Tests robustness and graceful failure.</p>
       <button class="btn btn-danger" onclick="runRedTeam()" id="redteamBtn">🔴 Run Red Team Tests</button>
     </div>
     <div id="redteamResults"></div>
@@ -353,7 +352,7 @@
   <div class="page" id="page-modeleval">
     <div class="card">
       <div class="section-label">🤖 Model Eval — Solution Quality Scorer</div>
-      <p style="color:var(--muted); font-size:0.88rem; margin-bottom:20px; font-family:'Space Mono',monospace; line-height:1.7;">AI evaluates its own solution on 5 criteria — Relevance, Completeness, Clarity, Actionability, Confidence.</p>
+      <p style="color:var(--muted); font-size:0.88rem; margin-bottom:20px; font-family:'Space Mono',monospace; line-height:1.7;">AI evaluates its own solution on 5 criteria using Cursor-style structured evaluation prompts.</p>
       <div class="input-wrapper">
         <textarea id="modelEvalInput" placeholder="Enter a problem to evaluate solution quality..."></textarea>
       </div>
@@ -368,7 +367,7 @@
   <div class="page" id="page-written">
     <div class="card">
       <div class="section-label">✍️ Written Evals — AI Evaluates AI</div>
-      <p style="color:var(--muted); font-size:0.88rem; margin-bottom:20px; font-family:'Space Mono',monospace; line-height:1.7;">7 pre-written problems evaluated by a second AI call. Tests playbook correctness AND solution quality.</p>
+      <p style="color:var(--muted); font-size:0.88rem; margin-bottom:20px; font-family:'Space Mono',monospace; line-height:1.7;">7 pre-written problems evaluated by a second AI call using Cursor-style structured evaluation prompts.</p>
       <div id="writtenEvalsContent">
         <div class="empty-state">// Click "Run Written Evals" to start</div>
       </div>
@@ -384,7 +383,7 @@
   const steps = [
     { icon: "🔍", text: "Reading problem..." },
     { icon: "📖", text: "Matching playbook..." },
-    { icon: "🧠", text: "Reasoning step by step..." },
+    { icon: "🧠", text: "Applying Cursor-style structured prompt..." },
     { icon: "🛠️", text: "Building solution..." },
     { icon: "✅", text: "Done." }
   ];
@@ -550,7 +549,7 @@
     document.getElementById("sessionResult").innerHTML = `
       <div class="card">
         <div class="section-label">Session Starting...</div>
-        <div class="empty-state">// Agent is planning and executing steps...<br>This may take 20-30 seconds.</div>
+        <div class="empty-state">// Agent is executing Cursor tool calls step by step...<br>This may take 20-30 seconds.</div>
       </div>`;
 
     try {
@@ -567,21 +566,24 @@
         <div class="session-step">
           <div class="session-step-header">
             <span class="session-step-icon">${step.step_icon}</span>
-            <div>
+            <div class="session-step-info">
               <div class="session-step-name">Step ${step.step_id}: ${step.step_name}</div>
-              <div class="session-step-desc">${step.description}</div>
+              <div class="session-step-meta">
+                <span class="session-step-tool">${step.tool}</span>
+                <span class="session-step-desc">${step.description}</span>
+              </div>
             </div>
-            <span class="session-step-status">✅ Completed</span>
+            <span class="session-step-status">✅ Done</span>
           </div>
           <div class="session-step-output">${step.output}</div>
         </div>`).join('');
 
       document.getElementById("sessionResult").innerHTML = `
         <div class="card">
-          <div class="session-id-badge">🤖 Session #${data.session_id} · ${data.started_at}</div>
+          <div class="session-id-badge">🤖 Session #${data.session_id} · ${data.started_at} · ✅ Complete</div>
           <div class="section-label">Task</div>
-          <div style="color:var(--text); font-size:0.95rem; margin-bottom:20px; padding:16px; background:var(--surface); border-radius:10px;">${data.task}</div>
-          <div class="section-label">${data.total_steps} Steps Completed</div>
+          <div style="color:var(--text); font-size:0.95rem; margin-bottom:20px; padding:16px; background:var(--surface); border-radius:10px; font-family:'Space Mono',monospace;">${data.task}</div>
+          <div class="section-label">${data.total_steps} Steps Executed via Cursor Tool Loop</div>
           ${stepsHtml}
         </div>`;
 
@@ -600,10 +602,7 @@
 
   function renderDevinHistory() {
     const container = document.getElementById("sessionHistory");
-    if (devinSessions.length === 0) {
-      container.innerHTML = '';
-      return;
-    }
+    if (devinSessions.length === 0) { container.innerHTML = ''; return; }
 
     const typeLabels = {
       build: "🏗️ Build", debug: "🐛 Debug", review: "👁️ Review",
@@ -767,7 +766,7 @@
     const btn = document.getElementById("modelEvalBtn");
     btn.disabled = true;
     btn.textContent = "Evaluating...";
-    document.getElementById("modelEvalContent").innerHTML = '<div class="empty-state">// AI is evaluating solution quality...</div>';
+    document.getElementById("modelEvalContent").innerHTML = '<div class="empty-state">// AI evaluating with Cursor-style structured prompt...</div>';
     try {
       const response = await fetch(`${BACKEND}/model-eval`, {
         method: "POST",
@@ -794,7 +793,7 @@
   }
 
   async function loadWrittenEvals() {
-    document.getElementById("writtenEvalsContent").innerHTML = '<div class="empty-state">// Running written evals — AI evaluating AI...</div>';
+    document.getElementById("writtenEvalsContent").innerHTML = '<div class="empty-state">// Running written evals with Cursor-style evaluation prompts...</div>';
     try {
       const response = await fetch(`${BACKEND}/written-evals`);
       const data = await response.json();

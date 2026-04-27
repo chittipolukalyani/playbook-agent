@@ -58,70 +58,145 @@ def match_playbook(problem: str):
     return playbooks[0]
 
 
+def build_cursor_prompt(problem: str, playbook: dict) -> str:
+    """
+    Builds a structured prompt inspired by Cursor's system prompt architecture.
+    Based on: https://roman.pt/posts/cursor-under-the-hood/
+    Cursor uses XML sections: <communication>, <tool_calling>, <making_code_changes>, etc.
+    We apply the same pattern here with playbook-specific sections.
+    """
+    return f"""You are a powerful AI coding assistant — expert, direct, and helpful.
+
+<communication>
+1. Be conversational but professional.
+2. Never apologize excessively when results are unexpected.
+3. Give direct, actionable answers with real code examples.
+4. Be specific — avoid vague suggestions.
+</communication>
+
+<playbook_selection>
+Selected Playbook: {playbook["name"]}
+Reason: {playbook["description"]}
+This playbook was selected based on the user's problem keywords.
+Always apply this playbook's approach throughout your response.
+</playbook_selection>
+
+<tool_awareness>
+Available approaches for this problem type:
+- codebase_analysis: Understand the existing code structure
+- root_cause_finder: Identify why the problem is happening
+- solution_generator: Generate the actual fix or implementation
+- code_validator: Verify the solution is correct
+- documentation_writer: Explain what was done and why
+</tool_awareness>
+
+<problem_solving>
+User Problem: {problem}
+
+Follow these steps exactly:
+Step 1: Understand — What is the user asking?
+Step 2: Diagnose — What is the root cause or core issue?
+Step 3: Apply — Use the {playbook["name"]} approach to solve it
+Step 4: Implement — Give the complete solution with working code
+Step 5: Validate — Confirm the solution works, give confidence score out of 100
+</problem_solving>
+
+<output_format>
+Your response must include:
+- Clear step-by-step reasoning (label each step)
+- Working code examples in code blocks
+- Before/after comparison when fixing bugs
+- Confidence score at the very end (e.g. "Confidence Score: 92/100")
+</output_format>"""
+
+
 def get_session_steps(session_type: str) -> list:
+    """
+    Session steps inspired by Devin's autonomous task execution model.
+    Each session type has a specific workflow with tool names from Cursor's toolset.
+    """
     steps_map = {
         "build": [
-            {"id": 1, "name": "Planning", "icon": "📋", "description": "Understand requirements and plan the solution"},
-            {"id": 2, "name": "Designing", "icon": "🎨", "description": "Design the architecture and structure"},
-            {"id": 3, "name": "Coding", "icon": "💻", "description": "Write the actual code implementation"},
-            {"id": 4, "name": "Testing", "icon": "🧪", "description": "Write and run tests to verify correctness"},
-            {"id": 5, "name": "Documenting", "icon": "📝", "description": "Write clear documentation"},
+            {"id": 1, "name": "Planning", "icon": "📋", "tool": "codebase_search", "description": "Understand requirements and plan the solution architecture"},
+            {"id": 2, "name": "Designing", "icon": "🎨", "tool": "list_dir", "description": "Design the structure, interfaces and data flow"},
+            {"id": 3, "name": "Coding", "icon": "💻", "tool": "edit_file", "description": "Write the complete code implementation"},
+            {"id": 4, "name": "Testing", "icon": "🧪", "tool": "run_terminal_cmd", "description": "Write and verify tests for correctness"},
+            {"id": 5, "name": "Documenting", "icon": "📝", "tool": "diff_history", "description": "Write clear documentation and usage examples"},
         ],
         "debug": [
-            {"id": 1, "name": "Reproducing", "icon": "🔍", "description": "Reproduce the bug consistently"},
-            {"id": 2, "name": "Diagnosing", "icon": "🩺", "description": "Identify the root cause"},
-            {"id": 3, "name": "Fixing", "icon": "🔧", "description": "Apply the correct fix"},
-            {"id": 4, "name": "Verifying", "icon": "✅", "description": "Verify the fix works correctly"},
-            {"id": 5, "name": "Preventing", "icon": "🛡️", "description": "Add safeguards to prevent recurrence"},
+            {"id": 1, "name": "Reproducing", "icon": "🔍", "tool": "codebase_search", "description": "Reproduce the bug and understand its scope"},
+            {"id": 2, "name": "Diagnosing", "icon": "🩺", "tool": "grep_search", "description": "Find the root cause using code analysis"},
+            {"id": 3, "name": "Fixing", "icon": "🔧", "tool": "edit_file", "description": "Apply the targeted fix with minimal side effects"},
+            {"id": 4, "name": "Verifying", "icon": "✅", "tool": "run_terminal_cmd", "description": "Verify the fix resolves the issue completely"},
+            {"id": 5, "name": "Preventing", "icon": "🛡️", "tool": "fetch_rules", "description": "Add safeguards and tests to prevent recurrence"},
         ],
         "review": [
-            {"id": 1, "name": "Scanning", "icon": "👁️", "description": "Scan the code for obvious issues"},
-            {"id": 2, "name": "Analyzing", "icon": "🔬", "description": "Deep analysis of logic and patterns"},
-            {"id": 3, "name": "Identifying", "icon": "⚠️", "description": "Identify all issues and improvements"},
-            {"id": 4, "name": "Reporting", "icon": "📊", "description": "Create a structured review report"},
-            {"id": 5, "name": "Suggesting", "icon": "💡", "description": "Provide actionable suggestions"},
+            {"id": 1, "name": "Scanning", "icon": "👁️", "tool": "codebase_search", "description": "Scan the entire codebase for patterns and issues"},
+            {"id": 2, "name": "Analyzing", "icon": "🔬", "tool": "read_file", "description": "Deep analysis of logic, security and performance"},
+            {"id": 3, "name": "Identifying", "icon": "⚠️", "tool": "grep_search", "description": "Identify all issues, smells and improvement areas"},
+            {"id": 4, "name": "Reporting", "icon": "📊", "tool": "diff_history", "description": "Create a structured review report with severity levels"},
+            {"id": 5, "name": "Suggesting", "icon": "💡", "tool": "edit_file", "description": "Provide concrete, actionable code improvements"},
         ],
         "optimize": [
-            {"id": 1, "name": "Profiling", "icon": "📈", "description": "Profile current performance"},
-            {"id": 2, "name": "Identifying", "icon": "🎯", "description": "Identify bottlenecks and inefficiencies"},
-            {"id": 3, "name": "Refactoring", "icon": "♻️", "description": "Apply optimizations"},
-            {"id": 4, "name": "Benchmarking", "icon": "⚡", "description": "Benchmark before and after"},
-            {"id": 5, "name": "Reporting", "icon": "📋", "description": "Document all improvements made"},
+            {"id": 1, "name": "Profiling", "icon": "📈", "tool": "run_terminal_cmd", "description": "Profile current performance and identify bottlenecks"},
+            {"id": 2, "name": "Analyzing", "icon": "🎯", "tool": "codebase_search", "description": "Analyze time/space complexity of critical paths"},
+            {"id": 3, "name": "Refactoring", "icon": "♻️", "tool": "edit_file", "description": "Apply targeted optimizations with measurable impact"},
+            {"id": 4, "name": "Benchmarking", "icon": "⚡", "tool": "run_terminal_cmd", "description": "Benchmark before and after to quantify improvements"},
+            {"id": 5, "name": "Reporting", "icon": "📋", "tool": "diff_history", "description": "Document all changes and measured performance gains"},
         ],
         "security": [
-            {"id": 1, "name": "Scanning", "icon": "🔍", "description": "Scan for known vulnerabilities"},
-            {"id": 2, "name": "Threat Modeling", "icon": "⚠️", "description": "Model potential attack vectors"},
-            {"id": 3, "name": "Exploiting", "icon": "🔓", "description": "Test if vulnerabilities are exploitable"},
-            {"id": 4, "name": "Fixing", "icon": "🔒", "description": "Apply security fixes"},
-            {"id": 5, "name": "Reporting", "icon": "📋", "description": "Generate security audit report"},
+            {"id": 1, "name": "Scanning", "icon": "🔍", "tool": "codebase_search", "description": "Scan for known vulnerability patterns (OWASP Top 10)"},
+            {"id": 2, "name": "Threat Modeling", "icon": "⚠️", "tool": "grep_search", "description": "Model attack vectors and trust boundaries"},
+            {"id": 3, "name": "Testing", "icon": "🔓", "tool": "run_terminal_cmd", "description": "Test if vulnerabilities are actually exploitable"},
+            {"id": 4, "name": "Fixing", "icon": "🔒", "tool": "edit_file", "description": "Apply security hardening and input validation"},
+            {"id": 5, "name": "Reporting", "icon": "📋", "tool": "fetch_rules", "description": "Generate security audit report with risk levels"},
         ],
         "document": [
-            {"id": 1, "name": "Reading", "icon": "📖", "description": "Read and understand the code"},
-            {"id": 2, "name": "Mapping", "icon": "🗺️", "description": "Map out all components and relationships"},
-            {"id": 3, "name": "Writing", "icon": "✍️", "description": "Write clear documentation"},
-            {"id": 4, "name": "Formatting", "icon": "🎨", "description": "Format and structure the docs"},
-            {"id": 5, "name": "Reviewing", "icon": "👁️", "description": "Review for completeness and clarity"},
+            {"id": 1, "name": "Reading", "icon": "📖", "tool": "read_file", "description": "Read and understand all code components"},
+            {"id": 2, "name": "Mapping", "icon": "🗺️", "tool": "list_dir", "description": "Map relationships between modules and functions"},
+            {"id": 3, "name": "Writing", "icon": "✍️", "tool": "edit_file", "description": "Write clear, comprehensive documentation"},
+            {"id": 4, "name": "Formatting", "icon": "🎨", "tool": "reapply", "description": "Format with proper structure and examples"},
+            {"id": 5, "name": "Reviewing", "icon": "👁️", "tool": "diff_history", "description": "Review for completeness, accuracy and clarity"},
         ],
     }
     return steps_map.get(session_type, steps_map["build"])
+
+
+def build_session_step_prompt(task: str, session_type: str, step: dict) -> str:
+    """
+    Builds a Cursor-style structured prompt for each Devin session step.
+    Each step simulates a specific tool call from Cursor's toolset.
+    """
+    return f"""You are Devin, an autonomous AI software engineer.
+
+<session_context>
+Task: {task}
+Session Type: {session_type}
+Current Step: {step["id"]} of 5 — {step["name"]}
+Tool Being Used: {step["tool"]}
+Step Goal: {step["description"]}
+</session_context>
+
+<tool_execution>
+You are executing the "{step["tool"]}" tool for this step.
+Simulate what this tool would discover and produce.
+Be specific, technical, and produce real actionable output.
+</tool_execution>
+
+<output_requirements>
+- Focus ONLY on this step: {step["name"]}
+- Produce concrete output as if the tool ran successfully
+- Include code snippets where relevant
+- Keep response focused and under 250 words
+- End with a one-line summary of what was accomplished
+</output_requirements>"""
 
 
 # ============ MAIN AGENT ============
 @app.post("/analyze")
 async def analyze(query: Query):
     matched = match_playbook(query.problem)
-    prompt = f"""You are an expert AI assistant using the '{matched["name"]}' playbook.
-
-Problem: {query.problem}
-
-Follow these steps exactly:
-Step 1: Understand the problem
-Step 2: Identify the core issue
-Step 3: Apply the {matched["name"]} approach
-Step 4: Give the solution with explanation
-Step 5: Give a confidence score out of 100
-
-Be clear, specific and helpful."""
+    prompt = build_cursor_prompt(query.problem, matched)
 
     response = client.chat.completions.create(
         model="llama-3.1-8b-instant",
@@ -143,25 +218,16 @@ async def start_session(task: SessionTask):
 
     results = []
     for step in steps:
-        prompt = f"""You are Devin, an autonomous AI software engineer.
-
-Session Task: {task.task}
-Session Type: {task.session_type}
-Current Step: {step["name"]} — {step["description"]}
-
-Execute this specific step for the given task.
-Be specific, technical, and produce real output for this step.
-Keep response focused and under 200 words."""
-
+        prompt = build_session_step_prompt(task.task, task.session_type, step)
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=[{"role": "user", "content": prompt}]
         )
-
         results.append({
             "step_id": step["id"],
             "step_name": step["name"],
             "step_icon": step["icon"],
+            "tool": step["tool"],
             "description": step["description"],
             "output": response.choices[0].message.content,
             "status": "completed"
@@ -293,19 +359,23 @@ async def test_evals():
 @app.post("/model-eval")
 async def model_eval(query: Query):
     matched = match_playbook(query.problem)
-    eval_prompt = f"""You are an AI quality evaluator.
+    eval_prompt = f"""You are an AI quality evaluator using Cursor-style structured evaluation.
 
+<evaluation_context>
 Problem: {query.problem}
 Playbook Used: {matched["name"]}
+</evaluation_context>
 
-Generate a solution and evaluate it on these criteria:
+<evaluation_criteria>
+Generate a solution then score it on:
 1. RELEVANCE (0-100): Is the solution relevant to the problem?
 2. COMPLETENESS (0-100): Does it cover all aspects?
 3. CLARITY (0-100): Is it clear and understandable?
-4. ACTIONABILITY (0-100): Can the user act on this?
+4. ACTIONABILITY (0-100): Can the user act on this immediately?
 5. CONFIDENCE (0-100): Overall quality score
+</evaluation_criteria>
 
-Format EXACTLY like this:
+<output_format>
 SOLUTION:
 [your solution here]
 
@@ -315,7 +385,8 @@ COMPLETENESS: [score]
 CLARITY: [score]
 ACTIONABILITY: [score]
 CONFIDENCE: [score]
-VERDICT: [PASS if average >= 70, FAIL if below 70]"""
+VERDICT: [PASS if average >= 70, FAIL if below 70]
+</output_format>"""
 
     response = client.chat.completions.create(
         model="llama-3.1-8b-instant",
@@ -434,16 +505,21 @@ async def written_evals():
         matched = match_playbook(case["problem"])
         playbook_correct = matched["id"] == case["playbook"]
 
-        eval_prompt = f"""Evaluate this AI response quality.
+        eval_prompt = f"""Evaluate this AI response quality using Cursor-style structured evaluation.
+
+<evaluation_context>
 Problem: {case["problem"]}
 Expected Playbook: {case["playbook"]}
 Actual Playbook Used: {matched["name"]}
+</evaluation_context>
 
+<output_format>
 Respond EXACTLY like this:
 PLAYBOOK_MATCH: [YES/NO]
 QUALITY: [HIGH/MEDIUM/LOW]
 SCORE: [0-100]
-REASON: [one sentence]"""
+REASON: [one sentence]
+</output_format>"""
 
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
